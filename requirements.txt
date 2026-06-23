@@ -1,0 +1,12 @@
+sentence-transformers
+faiss-cpu
+pandas
+numpy
+tqdm
+streamlit
+PyPDF2
+python-docx
+torch>=2.3.0
+torchvision
+transformers
+hf_transfer
