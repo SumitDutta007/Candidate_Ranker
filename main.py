@@ -48,10 +48,24 @@ from src.utils.text_preprocessing import preprocess_text
 def main():
     # Paths
     DEBUG = True
-    jd_path = os.path.join("assets", "job_description.txt")
-    data_path = os.path.join("assets", "candidates.jsonl")
-    output_path = "Certified Accident.csv"
-    MIN_RETRIEVAL_SCORE = 5
+    jd_path = os.path.join(
+        "assets",
+        "job_description.txt"
+    )
+
+    data_path = os.getenv(
+        "CANDIDATES_PATH",
+        os.path.join(
+            "assets",
+            "candidates.jsonl"
+        )
+    )
+
+    output_path = os.getenv(
+        "OUTPUT_PATH",
+        "ranked_candidates.csv"
+    )
+    MIN_RETRIEVAL_SCORE = 0.35
 
     # Load job description
     print("Loading job description...")
@@ -137,7 +151,7 @@ def main():
                 candidate
             )
 
-            retrieval_hits = CandidateRetriever.score(
+            retrieval_hits, matched_terms = CandidateRetriever.score(
                 candidate_text,
                 expanded_terms
             )
@@ -152,10 +166,11 @@ def main():
                     retrieval_hits
                 )
 
+            normalized_hits = min(retrieval_hits / 10.0, 1.0)
             retrieval_score = (
-                retrieval_hits
-                + 10 * skill_score
-                + 5 * exp_score
+                0.25 * normalized_hits
+                + 0.45 * skill_score
+                + 0.30 * exp_score
             )
 
             if retrieval_score < MIN_RETRIEVAL_SCORE:
@@ -178,7 +193,7 @@ def main():
 
     total_candidates = len(prefilter_candidates)
     print(f"Candidates surviving retrieval: {total_candidates}")
-    TOP_SEMANTIC_POOL = 2000
+    TOP_SEMANTIC_POOL = 10000
     print(
         f"\nSemantic Pool Size: {TOP_SEMANTIC_POOL}"
     )
@@ -252,7 +267,7 @@ def main():
     )
 
     prefilter_candidates = (
-        prefilter_candidates[:1000]
+        prefilter_candidates[:5000]
     )
     semantic_scores = [
         item["semantic_score"]

@@ -1,13 +1,9 @@
 import json
-import tempfile
 import pandas as pd
 import streamlit as st
+import time
 
 from src.models.candidate import Candidate
-
-from src.data_loaders.candidate_dataset_loader import (
-    CandidateDatasetLoader
-)
 
 from src.services.jd_analyzer import JDAnalyzer
 from src.services.embedding_service import EmbeddingService
@@ -44,13 +40,15 @@ from src.utils.text_preprocessing import (
     preprocess_text
 )
 
-progress = st.progress(0)
-status = st.empty()
-TOP_OUTPUT = 100
 st.set_page_config(
     page_title="Redrob Candidate Ranker",
     layout="wide"
 )
+
+progress = st.progress(0)
+status = st.empty()
+
+TOP_OUTPUT = 100
 
 st.title(
     "Intelligent Candidate Discovery & Ranking Engine"
@@ -94,6 +92,7 @@ with st.expander(
     """)
 
 if st.button("Run Ranking"):
+    start = time.time()
 
     if not jd_file or not candidate_file:
         st.error(
@@ -189,7 +188,13 @@ if st.button("Run Ranking"):
         total_candidates = len(candidates_raw)
         retrieved_count = 0
 
-        for row in candidates_raw:
+        for idx,row in candidates_raw:
+            progress.progress(
+                30 + int(
+                    30 * (idx + 1) /
+                    total_candidates
+                )
+            )
 
             candidate = (
                 Candidate.from_dict(row)
@@ -236,10 +241,10 @@ if st.button("Run Ranking"):
                 "skill_details": skill_details
             })
             status.write(
-                f"Retrieved {len(candidates)} candidates..."
+                f"Processed {len(candidates_raw):,} candidates | "
+                f"Retrieved {retrieved_count:,}"
             )
-            progress.progress(30 + int(70 * len(candidates) / len(candidates_raw))
-            )
+            
         TOP_SEMANTIC_POOL = 2000
 
         candidates = sorted(

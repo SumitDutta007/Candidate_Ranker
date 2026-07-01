@@ -1,0 +1,89 @@
+# Redrob Hackathon — Submission Metadata Template
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "Certified Accident"
+
+primary_contact:
+  name: "Sumit Dutta"
+  email: "sumitdutta2810@gmail.com"
+  phone: "+91-9508826435"
+
+team_members:
+  - name: "Sumit Dutta"
+    email: "sumitdutta2810@gmail.com"
+    role: "Full Stack Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/SumitDutta007/Candidate_Ranker"
+
+sandbox_link: "https://candidateranker-v01.streamlit.app/"
+
+reproduce_command: 'python rank.py --candidates ./candidates.jsonl --out "./Certified Accident.csv"'
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Windows Desktop"
+  cpu_cores: 4
+  ram_gb: 8
+  python_version: "3.12.2"
+  os: "Microsoft Windows 11, v-10.0.26200 N/A Build 26200"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: false
+  pre_computation_time_minutes: 4min 50s
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "ChatGPT"         # e.g. for architecture discussion, code review
+  - "Claude"          # e.g. for autocomplete
+
+ai_usage_summary: |
+  - AI tools were used to accelerate development through architecture discussions,
+  code review, debugging, documentation, and refactoring suggestions.
+  ChatGPT assisted with designing the modular ranking pipeline, improving scoring
+  strategies, optimizing CPU performance, and preparing project documentation.
+  - Claude was used for code completion and boilerplate generation.
+  All engineering decisions, system design, implementation, testing, tuning,
+  and final validation were performed by the team. No hosted AI services or
+  external APIs are used during candidate ranking or inference.
+
+# ============================================================================
+# Approach summary (optional but recommended)
+# ============================================================================
+methodology_summary: |
+  We developed a modular hybrid candidate ranking engine for large-scale offline
+  recruitment under CPU-only constraints. The pipeline begins by analyzing the
+  job description to extract required skills, experience range, seniority, and
+  domain-specific keywords. A query expansion layer improves retrieval recall by
+  adding semantically related terms before lightweight candidate retrieval,
+  efficiently reducing the search space while preserving relevant profiles.
+
+  Retrieved candidates are evaluated using a hybrid scoring framework that
+  combines semantic similarity, skill relevance, experience fit, domain
+  expertise, company background, recruiter behavioral signals, and honeypot
+  detection. The highest-ranked candidates are then shortlisted using semantic
+  ranking to maximize precision while maintaining computational efficiency.
+
+  Finally, an explainability module generates concise, human-readable reasoning
+  for every shortlisted candidate using only verified profile attributes,
+  ensuring transparent and trustworthy recommendations. The complete pipeline
+  runs entirely offline without external APIs, is optimized for large candidate
+  pools within the competition's compute constraints, and produces an
+  explainable Top-100 ranked shortlist suitable for recruiter review."
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true        # I have read submission_spec.md in full
+  code_is_original_work: true       # My code is my team's original work (using AI as a tool is fine)
+  no_collusion: true                # I have not coordinated my submission with other teams
+  honeypot_check_done: false        # OPTIONAL — set true if you explicitly checked for honeypots in your ranking
+  reproduction_tested: true         # I have tested that my reproduce_command runs end-to-end

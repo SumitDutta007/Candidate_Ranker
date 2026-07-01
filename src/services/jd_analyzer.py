@@ -1,7 +1,7 @@
 import re
 
 from ..models.job_description import JobDescription
-
+from .skill_taxonomy import TECHNOLOGY_ALIASES
 
 class JDAnalyzer:
 
@@ -17,6 +17,28 @@ class JDAnalyzer:
         r"(\d+)\+?\s*years",
         r"minimum\s*(\d+)\s*years",
         r"at least\s*(\d+)\s*years"
+    ]
+    PREFERRED_HEADERS = [
+        "preferred",
+        "preferred qualifications",
+        "preferred skills",
+        "nice to have",
+        "good to have",
+        "bonus",
+        "desired",
+        "plus"
+    ]
+
+    SECTION_HEADERS = [
+        "responsibilities",
+        "requirements",
+        "qualifications",
+        "about",
+        "benefits",
+        "what you'll do",
+        "what you will do",
+        "must have",
+        "minimum qualifications"
     ]
 
     @staticmethod
@@ -44,43 +66,56 @@ class JDAnalyzer:
         text = jd_text.lower()
         bullets = JDAnalyzer.extract_bullet_points(jd_text)
         
-        TECH_KEYWORDS = {
-            "python",
-            "llm",
-            "retrieval",
-            "ranking",
-            "learning to rank",
-            "embeddings",
-            "vector search",
-            "pinecone",
-            "faiss",
-            "milvus",
-            "weaviate",
-            "qdrant",
-            "elasticsearch",
-            "opensearch",
-            "ndcg",
-            "mrr",
-            "map",
-            "recommendation",
-            "recommendation systems",
-            "hybrid search",
-            "a/b testing",
-            "evaluation",
-            "fine tuning",
-            "lora",
-            "qlora",
-            "peft"
-        }
+        
 
         required_skills = []
 
-        for skill in TECH_KEYWORDS:
+        for canonical_skill, aliases in TECHNOLOGY_ALIASES.items():
 
-            if skill in text:
-                required_skills.append(skill)
+            for alias in aliases:
+
+                if alias in text:
+
+                    required_skills.append(canonical_skill)
+
+                    break
+
+        required_skills = sorted(
+            list(set(required_skills))
+        )
 
         preferred_skills = []
+
+        preferred_sections = []
+
+        capture = False
+
+        for line in jd_text.splitlines():
+            lower = line.lower().strip()
+            if any(header in lower for header in JDAnalyzer.PREFERRED_HEADERS):
+                capture = True
+                continue
+
+            if capture:
+                # stop when next section starts
+                if any(lower.startswith(section) for section in JDAnalyzer.SECTION_HEADERS):
+                    break
+
+                preferred_sections.append(lower)
+
+        preferred_text = " ".join(preferred_sections).lower()
+
+        for canonical_skill, aliases in TECHNOLOGY_ALIASES.items():
+
+            for alias in aliases:
+
+                if re.search(r"\b" + re.escape(alias) + r"\b", text):
+                    required_skills.append(canonical_skill)
+                    break
+
+        preferred_skills = sorted(
+            list(set(preferred_skills))
+        )
         
         min_experience = 0
         max_experience = 0
@@ -137,15 +172,13 @@ class JDAnalyzer:
                 seniority = level
                 break
 
-        domain_keywords = []
-
-        for item in required_skills:
-            domain_keywords.append(
-                item.lower()
+        domain_keywords = sorted(
+            list(
+                set(
+                    required_skills +
+                    preferred_skills
+                )
             )
-
-        domain_keywords = list(
-            set(domain_keywords)
         )
 
         return JobDescription(
