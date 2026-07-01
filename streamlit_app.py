@@ -50,6 +50,10 @@ status = st.empty()
 
 TOP_OUTPUT = 100
 
+@st.cache_resource
+def load_embedding_service():
+    return EmbeddingService()
+
 st.title(
     "Intelligent Candidate Discovery & Ranking Engine"
 )
@@ -129,9 +133,7 @@ if st.button("Run Ranking"):
             f"Detected {len(jd.required_skills)} skills"
         )
 
-        embedding_service = (
-            EmbeddingService()
-        )
+        embedding_service = load_embedding_service()
 
         jd_embedding = (
             embedding_service.embed_query(
@@ -159,42 +161,30 @@ if st.button("Run Ranking"):
 
         candidates = []
 
-        if candidate_file.name.endswith(
-            ".json"
-        ):
-
-            candidates_raw = json.load(
-                candidate_file
-            )
-
+        if candidate_file.name.endswith(".json"):
+            data = json.load(candidate_file)
+            if isinstance(data, list):
+                candidates_raw = data
+            else:
+                candidates_raw = [data]
         else:
-
             candidates_raw = []
-
-            for line in (
-                candidate_file
-                .read()
-                .decode("utf-8")
-                .splitlines()
-            ):
-
+            for line in candidate_file.read().decode("utf-8").splitlines():
                 if line.strip():
-
-                    candidates_raw.append(
-                        json.loads(line)
-                    )
+                    candidates_raw.append(json.loads(line))
 
         # Funnel statistics
         total_candidates = len(candidates_raw)
         retrieved_count = 0
 
-        for idx,row in candidates_raw:
-            progress.progress(
-                30 + int(
-                    30 * (idx + 1) /
-                    total_candidates
+        for idx, row in enumerate(candidates_raw):
+            if total_candidates > 0:
+                progress.progress(
+                    30 + int(
+                        30 * (idx + 1) /
+                        total_candidates
+                    )
                 )
-            )
 
             candidate = (
                 Candidate.from_dict(row)
@@ -245,7 +235,7 @@ if st.button("Run Ranking"):
                 f"Retrieved {retrieved_count:,}"
             )
             
-        TOP_SEMANTIC_POOL = 2000
+        TOP_SEMANTIC_POOL = 1000
 
         candidates = sorted(
             candidates,
