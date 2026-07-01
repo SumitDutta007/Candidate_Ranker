@@ -48,8 +48,6 @@ st.set_page_config(
 progress = st.progress(0)
 status = st.empty()
 
-TOP_OUTPUT = 100
-
 @st.cache_resource
 def load_embedding_service():
     return EmbeddingService()
@@ -68,6 +66,14 @@ jd_file = st.file_uploader(
 
 candidate_file = st.file_uploader(
     "Candidate Sample",
+)
+top_k = st.number_input(
+    "Number of ranked candidates to return",
+    min_value=1,
+    max_value=1000,
+    value=100,
+    step=1,
+    help="Choose how many top candidates to include in the final ranking."
 )
 with st.expander(
     "Ranking Pipeline"
@@ -175,6 +181,13 @@ if st.button("Run Ranking"):
 
         # Funnel statistics
         total_candidates = len(candidates_raw)
+        st.info(f"Loaded {total_candidates:,} candidates")
+
+        TOP_OUTPUT = min(
+            top_k,
+            total_candidates
+        )
+
         retrieved_count = 0
 
         for idx, row in enumerate(candidates_raw):
@@ -192,15 +205,13 @@ if st.button("Run Ranking"):
 
             candidate_text = CandidateTextBuilder.build(candidate)
 
-            hits = CandidateRetriever.score(
+            hits, matched_terms = CandidateRetriever.score(
                 candidate_text,
                 expanded_terms
             )
-            
 
             if hits <= 0:
                 continue
-            retrieved_count += 1
 
             exp_score, exp_details = (
                 experience_scorer.score(
@@ -235,7 +246,10 @@ if st.button("Run Ranking"):
                 f"Retrieved {retrieved_count:,}"
             )
             
-        TOP_SEMANTIC_POOL = 1000
+        TOP_SEMANTIC_POOL = min(
+            max(TOP_OUTPUT * 20, 500),
+            len(candidates)
+        )
 
         candidates = sorted(
             candidates,
@@ -304,7 +318,7 @@ if st.button("Run Ranking"):
 
         col4.metric(
             "Final Output",
-            "100"
+            f"{TOP_OUTPUT:,}"
         )
 
         results = []
@@ -434,7 +448,7 @@ if st.button("Run Ranking"):
         ↓
         {semantic_pool_size:,} Semantic Ranking
         ↓
-        100 Final Candidates
+        {TOP_OUTPUT:,} Final Candidates
         """
         )
 
