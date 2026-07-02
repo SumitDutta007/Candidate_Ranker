@@ -1,6 +1,6 @@
 # Intelligent Candidate Discovery & Ranking Engine
 
-> **Redrob Data & AI Challenge** — Submission by [Your Team Name]
+> **Redrob Data & AI Challenge** — Submission by Certified Accident
 
 A multi-stage AI pipeline that ranks 100,000 candidates against a job description the way a senior recruiter would — combining semantic understanding, domain expertise detection, skill depth analysis, and behavioral signal integration to surface the highest-signal candidates with full explainability.
 
@@ -276,8 +276,8 @@ python -c "from sentence_transformers import SentenceTransformer; SentenceTransf
 ### Quick Test (Sample Data)
 
 ```bash
-# Edit main.py: set data_path = "assets/candidates_sample.jsonl"
-python main.py
+# Edit : add candidates.jsonl file to the root directory of the project
+python rank.py --candidates ./candidates.jsonl --out "./Certified Accident.csv"
 ```
 
 Produces a ranked CSV for the first 50 candidates in seconds.
@@ -285,14 +285,14 @@ Produces a ranked CSV for the first 50 candidates in seconds.
 ### Full Run (100k Candidates)
 
 ```bash
-python main.py
+python rank.py --candidates ./candidates.jsonl --out "./Certified Accident.csv"
 ```
 
 **Expected performance:**
-- Retrieval prefilter: ~1–2 min
-- Scoring (skill + experience + signal): ~3–5 min
-- Semantic encoding (top 2000 candidates): ~2–4 min
-- Total: **~8–12 minutes on a standard laptop CPU**
+- Retrieval prefilter: ~2 min
+- Scoring (skill + experience + signal): ~1 min
+- Semantic encoding (top 2000 candidates): ~2 min
+- Total: **~4-5 minutes on a standard laptop CPU**
 
 Output: `ranked_candidates.csv` — top 100 candidates, sorted by final score.
 
@@ -300,8 +300,8 @@ Output: `ranked_candidates.csv` — top 100 candidates, sorted by final score.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `MIN_RETRIEVAL_SCORE` | `5` | Minimum term hits to survive prefilter |
-| `TOP_SEMANTIC_POOL` | `2000` | Candidates entering the semantic stage |
+| `MIN_RETRIEVAL_SCORE` | `0.35` | Minimum term hits to survive prefilter |
+| `TOP_SEMANTIC_POOL` | `5000` | Candidates entering the semantic stage |
 | `TOP_OUTPUT` | `100` | Final shortlist size |
 | `DEBUG` | `True` | Verbose stage-by-stage output |
 
@@ -361,12 +361,12 @@ The validator checks:
 
 ## Submission Checklist
 
-- [ ] `ranked_candidates.csv` — top 100 candidates, passes validator
-- [ ] GitHub repository — public, contains all source code
-- [ ] `approach.pdf` — slide deck explaining architecture and design choices
-- [ ] Working sandbox — HuggingFace Spaces / Streamlit Cloud / Colab link
-- [ ] `submission_metadata_template.yaml` — completed with team name, repo URL, sandbox link, AI tools declaration
-- [ ] Honeypot rate in top 100 < 10% (verify with `validate_submission.py`)
+- [x] `ranked_candidates.csv` — top 100 candidates, passes validator
+- [x] GitHub repository — public, contains all source code
+- [x] `approach.pdf` — slide deck explaining architecture and design choices
+- [x] Working sandbox — HuggingFace Spaces / Streamlit Cloud / Colab link
+- [x] `submission_metadata_template.yaml` — completed with team name, repo URL, sandbox link, AI tools declaration
+- [x] Honeypot rate in top 100 < 10% (verify with `validate_submission.py`)
 
 ---
 
